@@ -1,0 +1,10 @@
+{
+  "name": "CastUrVote",
+  "short_name": "CastUrVote",
+  "description": "Secure web-based election management system.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f8fb",
+  "theme_color": "#147c73",
+  "icons": []
+}

@@ -1,0 +1,64 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsElection(electionId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/elections/$(electionId))
+        && get(/databases/$(database)/documents/elections/$(electionId)).data.electionOfficerId == request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read, update: if signedIn() && request.auth.uid == userId;
+      allow create: if signedIn() && request.auth.uid == userId;
+    }
+
+    match /elections/{electionId} {
+      allow create: if signedIn() && request.resource.data.electionOfficerId == request.auth.uid;
+      allow read, update, delete: if signedIn() && resource.data.electionOfficerId == request.auth.uid;
+    }
+
+    match /positions/{positionId} {
+      allow read: if ownsElection(resource.data.electionId);
+      allow create, update, delete: if ownsElection(request.resource.data.electionId);
+    }
+
+    match /candidates/{candidateId} {
+      allow read: if ownsElection(resource.data.electionId);
+      allow create, update, delete: if ownsElection(request.resource.data.electionId);
+    }
+
+    match /eligible_voters/{voterId} {
+      allow read: if ownsElection(resource.data.electionId);
+      allow create, update, delete: if ownsElection(request.resource.data.electionId);
+    }
+
+    match /voter_status/{statusId} {
+      allow read: if ownsElection(resource.data.electionId);
+      allow create, update, delete: if ownsElection(request.resource.data.electionId);
+    }
+
+    match /votes/{voteId} {
+      allow create: if ownsElection(request.resource.data.electionId)
+        && !("rollNumber" in request.resource.data)
+        && !("voterId" in request.resource.data);
+      allow read: if ownsElection(resource.data.electionId);
+      allow update, delete: if false;
+    }
+
+    match /results/{resultId} {
+      allow read: if ownsElection(resource.data.electionId);
+      allow create, update, delete: if ownsElection(request.resource.data.electionId);
+    }
+
+    match /audit_logs/{logId} {
+      allow create: if ownsElection(request.resource.data.electionId);
+      allow read: if ownsElection(resource.data.electionId);
+      allow update, delete: if false;
+    }
+  }
+}

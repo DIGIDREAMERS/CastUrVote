@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CastUrVote</title>
+  <style>
+    :root {
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #61708a;
+      --line: #d7dee8;
+      --signal: #147c73;
+      --danger: #b42318;
+      --warn: #af5b00;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 22px;
+      background: var(--panel);
+      border-bottom: 1px solid var(--line);
+    }
+    h1, h2, h3, p { margin: 0; }
+    h1 { font-size: 28px; }
+    h2 { font-size: 20px; margin-bottom: 14px; }
+    h3 { font-size: 16px; margin-bottom: 8px; }
+    button, input, textarea {
+      font: inherit;
+    }
+    button {
+      border: 0;
+      border-radius: 6px;
+      background: var(--signal);
+      color: white;
+      font-weight: 700;
+      padding: 10px 13px;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: white;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    button.danger { background: var(--danger); }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .45;
+    }
+    input, textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+      background: white;
+      color: var(--ink);
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    .tagline { color: var(--muted); margin-top: 3px; }
+    .status {
+      border: 1px solid rgba(20,124,115,.25);
+      background: #e9f7f4;
+      color: var(--signal);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: 290px 1fr;
+      gap: 16px;
+      padding: 16px;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+      box-shadow: 0 14px 40px rgba(23,32,51,.08);
+    }
+    .nav {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .nav button {
+      min-height: 62px;
+      text-align: left;
+      background: white;
+      color: var(--ink);
+      border: 1px solid var(--line);
+    }
+    .nav button.active {
+      background: var(--signal);
+      color: white;
+      border-color: var(--signal);
+    }
+    .metrics { display: grid; gap: 8px; margin-top: 16px; }
+    .metric {
+      display: flex;
+      justify-content: space-between;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .msg {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 6px;
+      background: #eef2f7;
+      color: #334155;
+      font-size: 14px;
+    }
+    .grid { display: grid; gap: 12px; }
+    .two { grid-template-columns: repeat(2, minmax(0,1fr)); }
+    .four { grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; align-items: center; }
+    .card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 13px;
+      background: white;
+    }
+    .muted { color: var(--muted); font-size: 14px; }
+    .ok { color: var(--signal); font-weight: 700; }
+    .bad { color: var(--danger); font-weight: 700; }
+    .warn { color: var(--warn); font-weight: 700; }
+    .device {
+      display: grid;
+      place-items: center;
+      min-height: 180px;
+      background: #f1f5f9;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      text-align: center;
+    }
+    .device strong { display: block; font-size: 52px; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 14px;
+    }
+    th, td {
+      text-align: left;
+      padding: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    .candidate {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      text-align: left;
+      width: 100%;
+      color: var(--ink);
+      background: white;
+      border: 1px solid var(--line);
+    }
+    .candidate:hover { border-color: var(--signal); }
+    .symbol {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 54px;
+      border-radius: 6px;
+      background: #eef7f6;
+      color: var(--signal);
+      font-weight: 900;
+    }
+    .lock {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 8px 12px;
+      background: #eef2f7;
+      font-weight: 700;
+    }
+    .unlock {
+      background: #e9f7f4;
+      color: var(--signal);
+    }
+    .bar {
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      background: var(--signal);
+    }
+    @media (max-width: 850px) {
+      header { align-items: flex-start; flex-direction: column; }
+      .layout { grid-template-columns: 1fr; }
+      .two, .four { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>CastUrVote</h1>
+      <p class="tagline">Secure. Simple. Transparent.</p>
+    </div>
+    <div id="status" class="status">draft</div>
+  </header>
+
+  <main class="layout">
+    <aside class="panel">
+      <div class="nav" id="nav"></div>
+      <div class="metrics" id="metrics"></div>
+      <div class="msg" id="message">Demo election ready. Start at E1.</div>
+    </aside>
+    <section id="screen"></section>
+  </main>
+
+  <script>
+    const roles = {
+      E1: "Officer",
+      V1: "Verify",
+      C1: "Control",
+      P1: "Position 1",
+      P2: "Position 2",
+      P3: "Position 3",
+      P4: "Position 4"
+    };
+
+    let active = "E1";
+    let message = "Demo election ready. Start at E1.";
+    let state = JSON.parse(localStorage.getItem("casturvote-html")) || {
+      election: {
+        title: "College Union Election 2026",
+        organization: "CastUrVote Demo Campus",
+        status: "draft",
+        startPin: "1234",
+        closePin: "9876",
+        session: null
+      },
+      voters: [
+        { roll: "CS001", name: "Muhammed Yaseen", batch: "CSE-A", email: "yaseen@example.com" },
+        { roll: "CS002", name: "Ananya R", batch: "CSE-A", email: "ananya@example.com" },
+        { roll: "EC011", name: "Vishnu K", batch: "ECE-B", email: "" },
+        { roll: "ME021", name: "Sara P", batch: "ME-A", email: "" }
+      ],
+      status: {},
+      positions: [
+        { id: "chair", name: "Chairperson", order: 1 },
+        { id: "secretary", name: "General Secretary", order: 2 },
+        { id: "treasurer", name: "Treasurer", order: 3 },
+        { id: "arts", name: "Arts Secretary", order: 4 }
+      ],
+      candidates: [
+        { id: "c1", position: "chair", name: "Amina K", symbol: "Lamp" },
+        { id: "c2", position: "chair", name: "Rahul P", symbol: "Book" },
+        { id: "c3", position: "secretary", name: "Neha S", symbol: "Star" },
+        { id: "c4", position: "secretary", name: "Arjun V", symbol: "Tree" },
+        { id: "c5", position: "treasurer", name: "Fathima R", symbol: "Key" },
+        { id: "c6", position: "treasurer", name: "Joel M", symbol: "Pen" },
+        { id: "c7", position: "arts", name: "Diya N", symbol: "Drum" },
+        { id: "c8", position: "arts", name: "Kiran T", symbol: "Brush" }
+      ],
+      votes: [],
+      logs: [{ time: new Date().toLocaleTimeString(), actor: "SYSTEM", action: "Ready", details: "Demo initialized." }]
+    };
+
+    function save(note) {
+      if (note) message = note;
+      localStorage.setItem("casturvote-html", JSON.stringify(state));
+      render();
+    }
+
+    function stat() {
+      const statuses = Object.values(state.status);
+      const voted = statuses.filter(s => s.voted).length;
+      const verified = statuses.filter(s => s.verified).length;
+      const eligible = state.voters.length;
+      return { eligible, verified, voted, turnout: eligible ? Math.round(voted / eligible * 100) : 0 };
+    }
+
+    function log(actor, action, details) {
+      state.logs.unshift({ time: new Date().toLocaleTimeString(), actor, action, details });
+    }
+
+    function findVoter(roll) {
+      roll = roll.trim().toUpperCase();
+      return state.voters.find(v => v.roll === roll);
+    }
+
+    function renderShell() {
+      document.getElementById("status").textContent = state.election.status;
+      document.getElementById("message").textContent = message;
+      document.getElementById("nav").innerHTML = Object.entries(roles).map(([key, label]) =>
+        `<button class="${active === key ? "active" : ""}" onclick="active='${key}';render()"><strong>${key}</strong><br>${label}</button>`
+      ).join("");
+      const s = stat();
+      document.getElementById("metrics").innerHTML = `
+        <div class="metric"><span>Eligible</span><strong>${s.eligible}</strong></div>
+        <div class="metric"><span>Verified</span><strong>${s.verified}</strong></div>
+        <div class="metric"><span>Voted</span><strong>${s.voted}</strong></div>
+        <div class="metric"><span>Turnout</span><strong>${s.turnout}%</strong></div>
+      `;
+    }
+
+    function officer() {
+      const closed = state.election.status === "closed" || state.election.status === "published";
+      return `
+        <div class="grid">
+          <section class="panel">
+            <h2>E1 Election Officer Dashboard</h2>
+            <div class="grid two">
+              <label>Election Name<input id="title" value="${state.election.title}"></label>
+              <label>Organization<input id="org" value="${state.election.organization}"></label>
+              <label>Start PIN<input id="startPin" value="${state.election.startPin}" maxlength="4"></label>
+              <label>Close PIN<input id="closePin" value="${state.election.closePin}" maxlength="4"></label>
+            </div>
+            <div class="actions">
+              <button onclick="saveElection()">Save</button>
+              <input id="pin" style="width:110px" placeholder="PIN">
+              <button onclick="startElection()">Start</button>
+              <button onclick="pauseElection()">Pause</button>
+              <button class="danger" onclick="closeElection()">Close</button>
+              <button onclick="state.election.status='published';log('E1','Published','Results published.');save('Results published.')">Publish</button>
+            </div>
+            <p class="muted" style="margin-top:10px">Demo PINs: start 1234, close 9876</p>
+          </section>
+          <section class="panel">
+            <h2>Eligible Voters</h2>
+            <textarea id="csv">RollNumber,Name,Batch,Email
+CS003,New Student,CSE-B,new@example.com</textarea>
+            <div class="actions"><button onclick="importCsv()">Import CSV Text</button></div>
+            ${table(["Roll", "Name", "Batch", "Status"], state.voters.map(v => [v.roll, v.name, v.batch, state.status[v.roll]?.voted ? "Voted" : state.status[v.roll]?.verified ? "Verified" : "Waiting"]))}
+          </section>
+          <section class="panel">
+            <h2>QR Device Pairing</h2>
+            <div class="grid four">${Object.keys(roles).map(r => `<div class="card"><strong>${r}</strong><p class="muted">${roles[r]}</p><div class="device" style="min-height:90px"><strong style="font-size:28px">QR</strong><span class="muted">casturvote://${r.toLowerCase()}</span></div></div>`).join("")}</div>
+          </section>
+          <section class="panel">
+            <h2>Reports and Results</h2>
+            ${closed ? resultsHtml() : `<p class="warn">Results are hidden until polling is closed.</p>`}
+          </section>
+          <section class="panel">
+            <h2>Audit Logs</h2>
+            ${table(["Time", "Actor", "Action", "Details"], state.logs.slice(0, 10).map(l => [l.time, l.actor, l.action, l.details]))}
+          </section>
+        </div>
+      `;
+    }
+
+    function verifier() {
+      const roll = document.getElementById("roll")?.value || "";
+      const voter = findVoter(roll);
+      const st = state.status[roll.toUpperCase()] || {};
+      return `
+        <section class="panel">
+          <h2>V1 Voter Verification Unit</h2>
+          <div class="grid two">
+            <div>
+              <label>Roll Number<input id="roll" value="${roll}" oninput="render()" placeholder="CS001"></label>
+              <div class="card" style="margin-top:12px">
+                ${!roll ? `<p class="muted">Enter a roll number.</p>` : voter ? `
+                  <h2>${voter.name}</h2>
+                  <p class="muted">${voter.batch}${voter.email ? " - " + voter.email : ""}</p>
+                  <p class="${st.voted ? "bad" : "ok"}">${st.voted ? "Already Voted" : "Eligible to Vote"}</p>
+                  <p>Voting status: ${st.voted ? "Voted" : st.verified ? "Verified" : "Not verified"}</p>
+                ` : `<p class="bad">Not Eligible</p>`}
+              </div>
+              <div class="actions"><button ${!voter || st.voted || state.election.status !== "polling" ? "disabled" : ""} onclick="verify('${roll.toUpperCase()}')">Verify Voter</button></div>
+            </div>
+            ${device("V1")}
+          </div>
+        </section>
+      `;
+    }
+
+    function control() {
+      const session = state.election.session;
+      return `
+        <section class="panel">
+          <h2>C1 Control Unit</h2>
+          <div class="grid two">
+            <div class="grid">
+              <div class="card">
+                <p class="muted">Current authorization</p>
+                <h2>${session ? session.roll : "No verified voter"}</h2>
+                <p>${session?.open ? "P1-P4 are unlocked." : session?.authorized ? "Ballot button is active." : "Waiting for V1."}</p>
+              </div>
+              <div class="actions">
+                <button ${!session || session.open || state.election.status !== "polling" ? "disabled" : ""} onclick="openBallot()">Ballot</button>
+                <input id="cpin" style="width:110px" placeholder="PIN">
+                <button onclick="startElection('cpin')">Start Polling</button>
+                <button onclick="pauseElection()">Emergency Pause</button>
+                <button class="danger" onclick="closeElection('cpin')">Close Polling</button>
+              </div>
+              <div class="grid four">
+                ${state.positions.map(p => `<div class="card"><strong>P${p.order}</strong><p>${session?.voted?.includes(p.id) ? "Recorded" : session?.open ? "Unlocked" : "Locked"}</p></div>`).join("")}
+              </div>
+            </div>
+            ${device("C1")}
+          </div>
+        </section>
+      `;
+    }
+
+    function voting(role) {
+      const order = Number(role.slice(1));
+      const position = state.positions.find(p => p.order === order);
+      const session = state.election.session;
+      const locked = !session?.open || session.voted.includes(position.id);
+      const candidates = state.candidates.filter(c => c.position === position.id);
+      return `
+        <section class="panel">
+          <h2>${role} Voting Unit</h2>
+          <div class="grid two">
+            <div>
+              <div class="card" style="display:flex;justify-content:space-between;align-items:center">
+                <div><p class="muted">Position</p><h2>${position.name}</h2></div>
+                <span class="lock ${locked ? "" : "unlock"}">${locked ? "Locked" : "Unlocked"}</span>
+              </div>
+              <div class="grid two" style="margin-top:12px">
+                ${candidates.map(c => `<button class="candidate" ${locked ? "disabled" : ""} onclick="cast('${position.id}','${c.id}')"><span><strong>${c.name}</strong><br><span class="muted">Symbol: ${c.symbol}</span></span><span class="symbol">${c.symbol[0]}</span></button>`).join("")}
+              </div>
+              ${session?.voted?.includes(position.id) ? `<p class="ok" style="margin-top:12px">Vote Recorded Successfully</p>` : ""}
+            </div>
+            ${device(role)}
+          </div>
+        </section>
+      `;
+    }
+
+    function saveElection() {
+      state.election.title = document.getElementById("title").value;
+      state.election.organization = document.getElementById("org").value;
+      state.election.startPin = document.getElementById("startPin").value;
+      state.election.closePin = document.getElementById("closePin").value;
+      log("E1", "Saved", "Election settings updated.");
+      save("Election saved.");
+    }
+
+    function startElection(pinId = "pin") {
+      const pin = document.getElementById(pinId)?.value || "";
+      if (pin !== state.election.startPin) return alert("Invalid start PIN.");
+      state.election.status = "polling";
+      log("E1", "Started", "Polling started.");
+      save("Polling started.");
+    }
+
+    function pauseElection() {
+      state.election.status = "paused";
+      log("C1", "Paused", "Emergency pause activated.");
+      save("Polling paused.");
+    }
+
+    function closeElection(pinId = "pin") {
+      const pin = document.getElementById(pinId)?.value || "";
+      if (pin !== state.election.closePin) return alert("Invalid close PIN.");
+      state.election.status = "closed";
+      state.election.session = null;
+      log("E1", "Closed", "Polling closed.");
+      save("Polling closed. Results unlocked.");
+    }
+
+    function importCsv() {
+      const text = document.getElementById("csv").value.trim();
+      const lines = text.split(/\r?\n/).slice(1);
+      let added = 0;
+      for (const line of lines) {
+        const [roll, name, batch, email] = line.split(",").map(v => (v || "").trim());
+        if (!roll || !name || !batch || findVoter(roll)) continue;
+        state.voters.push({ roll: roll.toUpperCase(), name, batch, email });
+        added++;
+      }
+      log("E1", "Import", `${added} voters imported.`);
+      save(`${added} voters imported.`);
+    }
+
+    function verify(roll) {
+      const voter = findVoter(roll);
+      if (!voter) return alert("Not eligible.");
+      if (state.status[roll]?.voted) return alert("Already voted.");
+      state.status[roll] = { verified: true, voted: false };
+      state.election.session = { roll, authorized: true, open: false, voted: [] };
+      log("V1", "Verified", `${roll} authorized.`);
+      save("Voter verified. C1 can enable ballot.");
+    }
+
+    function openBallot() {
+      state.election.session.open = true;
+      log("C1", "Ballot", `${state.election.session.roll} ballot enabled.`);
+      save("Ballot enabled. P1-P4 unlocked.");
+    }
+
+    function cast(position, candidate) {
+      if (!confirm("Record this vote?")) return;
+      const session = state.election.session;
+      if (!session?.open || session.voted.includes(position)) return alert("Ballot is locked.");
+      state.votes.push({ position, candidate, time: Date.now() });
+      session.voted.push(position);
+      log("P" + state.positions.find(p => p.id === position).order, "Vote recorded", "Vote stored without voter identity.");
+      if (session.voted.length === state.positions.length) {
+        state.status[session.roll].voted = true;
+        state.status[session.roll].votedAt = Date.now();
+        state.election.session = null;
+      }
+      save("Vote recorded successfully.");
+    }
+
+    function resultsHtml() {
+      return state.positions.map(p => {
+        const rows = state.candidates.filter(c => c.position === p.id).map(c => {
+          const votes = state.votes.filter(v => v.candidate === c.id).length;
+          return { ...c, votes };
+        });
+        const total = rows.reduce((sum, r) => sum + r.votes, 0);
+        const high = Math.max(0, ...rows.map(r => r.votes));
+        return `<div class="card" style="margin-bottom:12px"><h3>${p.name}</h3>${rows.map(r => {
+          const pct = total ? Math.round(r.votes / total * 100) : 0;
+          return `<p><strong>${r.name}</strong>${r.votes === high && high > 0 ? " - Winner" : ""} <span class="muted">${r.votes} votes, ${pct}%</span></p><div class="bar"><span style="width:${pct}%"></span></div>`;
+        }).join("")}</div>`;
+      }).join("");
+    }
+
+    function table(headers, rows) {
+      return `<table><thead><tr>${headers.map(h => `<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.map(r => `<tr>${r.map(c => `<td>${c}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+    }
+
+    function device(role) {
+      return `<div class="device"><div><strong>${role}</strong><span>${roles[role]}</span></div></div>`;
+    }
+
+    function render() {
+      renderShell();
+      document.getElementById("screen").innerHTML =
+        active === "E1" ? officer() :
+        active === "V1" ? verifier() :
+        active === "C1" ? control() :
+        voting(active);
+    }
+    render();
+  </script>
+</body>
+</html>
